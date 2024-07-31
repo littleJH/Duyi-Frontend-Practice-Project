@@ -1,9 +1,6 @@
-const MenuConstants = {
-  KEYNAME: 'data-key',
-  OPENSTATUSNAME: 'data-open-status',
-}
-
 class Menu {
+  static keyName = "data-key"
+  static openStatusName = "data-open-status"
   constructor(options) {
     const { menuClassname, submenuClassname, activeClassname } = options;
     if (Menu.instance) return Menu.instance; // 确保单例模式
@@ -22,8 +19,8 @@ class Menu {
     const menuItems = document.querySelectorAll(`.${this.menuClassname}`);
     menuItems.forEach((item) => {
       const submenu = item.querySelector(`.${this.submenuClassname}`);
-      const key = this.getAttribute(item, MenuConstants.KEYNAME);
-      const open = this.getAttribute(item, MenuConstants.OPENSTATUSNAME) === 'true';
+      const key = this.getAttribute(item, Menu.keyName);
+      const open = this.getAttribute(item, Menu.openStatusName) === 'true';
 
       const menuItem = {
         key,
