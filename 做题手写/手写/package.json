@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "test:promise": "jest ./Promise/MyPromise.js"
+    "test:promise": "jest ./Promise/MyPromise"
   },
   "dependencies": {
     "chai": "^5.1.1",

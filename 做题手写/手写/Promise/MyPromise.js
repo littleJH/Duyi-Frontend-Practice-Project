@@ -6,6 +6,9 @@ const runAsMicroTask = (callback) => {
   }
 }
 
+const isThenable = (promise) =>
+  promise && typeof promise === 'object' && typeof promise.then === 'function'
+
 class MyPromise {
   static PENDING = 'pending'
   static FULFILLED = 'fulfilled'
@@ -126,7 +129,7 @@ class MyPromise {
     }
 
     // 如果 x 是一个 promise，直接使用 x 的状态
-    if (this.isThenable(x)) {
+    if (isThenable(x)) {
       // 如果 x 的状态是 pending，promise2 需要保持 pending，直到 x 的状态变为 fulfilled / rejected
       if (x.state === MyPromise.PENDING) {
         x.then(
@@ -249,7 +252,7 @@ class MyPromise {
         reject(e)
       }
     }
-    const onRejectedHandler = (reject, promise2) => {
+    const onRejectedHandler = (reject, resolve, promise2) => {
       try {
         // 如果 onRejected 不是一个 Function 并且 promise1 的状态是 rejected
         if (
@@ -272,7 +275,7 @@ class MyPromise {
         onFulfilledHandler(resolve, reject, promise2),
       )
       this._pushHandler(MyPromise.REJECTED, () =>
-        onRejectedHandler(reject, promise2),
+        onRejectedHandler(reject, resolve, promise2),
       )
       this._runHandlers()
     })
@@ -329,13 +332,11 @@ class MyPromise {
        * 如果 value 是一个 thanable 对象，即 PromiseLike（实现了 PromiseA+），
        * 返回新的 Promise，状态与其保持一致
        */
-      if (this.isThenable(value)) {
+      if (isThenable(value)) {
         value.then(resolve, reject)
       }
       // 否则，直接返回一个 fulfilled 的 Promise
-      else {
-        return new MyPromise((resolve) => resolve(value))
-      }
+      else resolve(value)
     })
   }
 
@@ -370,16 +371,17 @@ class MyPromise {
         let fulfilledCount = 0 // 已完成 的数量
         // 可迭代对象不一定是数组或类数组，不能使用 for 循环，也不一定有 length 属性
         for (let p of iterable) {
+          const currentIndex = index
           index++
           // 非 Promise，直接添加到结果数组中
           if (!(p instanceof MyPromise)) {
-            result[index] = p
+            result[currentIndex] = p
             fulfilledCount++
           }
           // Promise
           else {
             p.then((res) => {
-              result[index] = res
+              result[currentIndex] = res
               fulfilledCount++
               // 遍历到最后一个时，已完成的数量 === 当前索引，意味全部已完成
               if (fulfilledCount === index) {
@@ -427,18 +429,19 @@ class MyPromise {
       let index = 0
       let count = 0
       for (let p of iterable) {
+        const currentIndex = index
         index++
         MyPromise.resolve(p)
           .then((value) => {
             count++
-            result[index] = {
+            result[currentIndex] = {
               status: MyPromise.FULFILLED,
               value,
             }
           })
           .catch((reason) => {
             count++
-            result[index] = {
+            result[currentIndex] = {
               status: MyPromise.REJECTED,
               reason,
             }
@@ -462,30 +465,23 @@ class MyPromise {
   static any(iterable) {
     return new MyPromise((resolve, reject) => {
       const reasons = []
+
       let index = 0
       let rejectedCount = 0
       for (let p of iterable) {
+        const currentIndex = index
         index++
         MyPromise.resolve(p)
           .then(resolve)
           .catch((err) => {
             rejectedCount++
-            reasons[index] = err
+            reasons[currentIndex] = err
             if (rejectedCount === index) {
               reject(reasons)
             }
           })
       }
     })
-  }
-
-  // 判断是否符合 promise 的基本要求
-  isThenable(promise) {
-    return (
-      promise &&
-      typeof promise === 'object' &&
-      typeof promise.then === 'function'
-    )
   }
 }
 
