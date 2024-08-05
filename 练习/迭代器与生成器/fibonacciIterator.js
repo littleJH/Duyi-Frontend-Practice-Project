@@ -1,6 +1,6 @@
 // 斐波那契数列迭代器
 
-function createFeiboIterator() {
+function createFibonacciIterator() {
   let n = 1
   let prev0 = 1,
     prev1 = 1
@@ -19,7 +19,7 @@ function createFeiboIterator() {
   }
 }
 
-const feiboIter = createFeiboIterator()
+const feiboIter = createFibonacciIterator()
 
 for (let i = 0; i < 10; i++) {
   console.log('🚀 ~ feiboIter.next():', feiboIter.next())
