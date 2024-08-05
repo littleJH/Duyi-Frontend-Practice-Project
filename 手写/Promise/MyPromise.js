@@ -2,7 +2,7 @@ const runAsMicroTask = (callback) => {
   if (globalThis === global) {
     globalThis.process.nextTick(callback)
   } else if (globalThis === window) {
-    queueMicrotask(callback)
+    globalThis.queueMicrotask(callback)
   }
 }
 
@@ -17,8 +17,9 @@ class MyPromise {
   #state
   #value
   #reason
-  #resolveQuene
-  #rejectQuene
+  #resolveQueue
+  #rejectQueue
+
   /**
    * Creates an instance of Promise.
    * @param {Function} executor Promise 的执行器，会被立即执行，用于描述 Promise 任务
@@ -28,8 +29,8 @@ class MyPromise {
     this.#state = MyPromise.PENDING
     this.#value = undefined
     this.#reason = undefined
-    this.#resolveQuene = []
-    this.#rejectQuene = []
+    this.#resolveQueue = []
+    this.#rejectQueue = []
 
     // 捕获执行器在执行过程中抛出的错误，调用 _reject，将状态变更为 rejected
     try {
@@ -89,23 +90,23 @@ class MyPromise {
    */
   _pushHandler(state, handler) {
     if (state === MyPromise.FULFILLED) {
-      this.#resolveQuene.push(handler)
+      this.#resolveQueue.push(handler)
     } else if (state === MyPromise.REJECTED) {
-      this.#rejectQuene.push(handler)
+      this.#rejectQueue.push(handler)
     }
   }
 
   // 运行所有 handlers
   _runHandlers() {
     if (this.#state === MyPromise.FULFILLED) {
-      while (this.#resolveQuene.length > 0) {
-        const handler = this.#resolveQuene.shift()
+      while (this.#resolveQueue.length > 0) {
+        const handler = this.#resolveQueue.shift()
         // 放到微任务队列中
         runAsMicroTask(handler)
       }
     } else if (this.#state === MyPromise.REJECTED) {
-      while (this.#rejectQuene.length > 0) {
-        const handler = this.#rejectQuene.shift()
+      while (this.#rejectQueue.length > 0) {
+        const handler = this.#rejectQueue.shift()
         // 放到微任务队列中
         runAsMicroTask(handler)
       }
