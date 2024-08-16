@@ -2,9 +2,9 @@ const fs = require('fs')
 const path = require('path')
 
 const targetDir = process.argv[2] || '.'
-console.log("🚀 ~ targetDir:", targetDir)
+console.log('🚀 ~ targetDir:', targetDir)
 
-const directories = './JS项目实战'
+const directories = './实战/JS项目实战'
 
 const files = {
   'index.html': `<!DOCTYPE html>
@@ -35,23 +35,21 @@ const files = {
   width: 100vw;
   height: 100vh;
 }
-`
-};
-
+`,
+}
 
 const dirPath = path.join(directories, targetDir)
 if (!fs.existsSync(dirPath)) {
   fs.mkdirSync(dirPath, { recursive: true })
-  console.log(`Directory created: ${dirPath}`);
+  console.log(`Directory created: ${dirPath}`)
 }
 
-Object.keys(files).forEach(file => {
+Object.keys(files).forEach((file) => {
   const filePath = path.join(dirPath, file)
   if (!fs.existsSync(filePath)) {
     fs.writeFileSync(filePath, files[file])
-    console.log(`File created: ${filePath}`);
+    console.log(`File created: ${filePath}`)
   }
 })
 
-
-console.log(`Project structure created successfully in ${targetDir}.`);
+console.log(`Project structure created successfully in ${targetDir}.`)
